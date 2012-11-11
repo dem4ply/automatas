@@ -1,0 +1,4 @@
+automatas
+=========
+
+programa de automatas
