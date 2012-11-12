@@ -27,8 +27,11 @@ typedef struct Automata
 } Automata_t;
 
 void Init_automata(Param_t *param, Automata_t *automata, ulong_t estado_seed, ulong_t transicion_seed);
+void Del_automata(Param_t *param, Automata_t *automata);
+
 void Print_automata(Param_t *param, Automata_t *automata);
 void Automata_to_string(Param_t *param, Automata_t *automata, char** c);
+
 
 
 void Init_automata(Param_t *param, Automata_t *automata, ulong_t estado_seed, ulong_t transicion_seed)
@@ -60,6 +63,15 @@ void Init_automata(Param_t *param, Automata_t *automata, ulong_t estado_seed, ul
 			automata->transiciones[j][i] = transicion_seed % param->n_estados;
 			transicion_seed *= base_d;
 		}
+}
+
+void Del_automata(Param_t *param, Automata_t *automata)
+{
+	ulong_t i;
+	free(automata->estados);
+	for (i = 0; i < param->n_pulsos; ++i)
+		free(automata->transiciones[i]);
+	free(automata->transiciones);
 }
 
 void Print_automata(Param_t *param, Automata_t *automata)
