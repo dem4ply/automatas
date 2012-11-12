@@ -31,6 +31,7 @@ void Del_automata(Param_t *param, Automata_t *automata);
 
 void Print_automata(Param_t *param, Automata_t *automata);
 void Automata_to_string(Param_t *param, Automata_t *automata, char** c);
+void Push_automata_b(Param_t *param, Automata_t *automata, FILE *f);
 
 
 
@@ -103,4 +104,16 @@ void Automata_to_string(Param_t *param, Automata_t *automata, char** c)
 		}
 		sprintf(*c, "%s);", *c);
 	}
+}
+
+void Push_automata_b(Param_t *param, Automata_t *automata, FILE *f)
+{
+	ulong_t i;
+	fwrite(&automata->isomorfo, sizeof(bool), 1, f);
+	fwrite(&automata->estado_seed, sizeof(ulong_t), 1, f);
+	fwrite(&automata->transicion_seed, sizeof(ulong_t), 1, f);
+	
+	fwrite(&automata->estados, sizeof(ulong_t), param->n_estados, f);
+	for (i = 0; i < param->n_pulsos; ++i)
+		fwrite(&automata->transiciones[i], sizeof(ulong_t), param->n_estados, f);
 }
