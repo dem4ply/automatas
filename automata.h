@@ -27,11 +27,13 @@ typedef struct Automata
 } Automata_t;
 
 void Init_automata(Param_t *param, Automata_t *automata, ulong_t estado_seed, ulong_t transicion_seed);
+void Init_automata_garbage(Param_t *param, Automata_t *automata);
 void Del_automata(Param_t *param, Automata_t *automata);
 
 void Print_automata(Param_t *param, Automata_t *automata);
 void Automata_to_string(Param_t *param, Automata_t *automata, char** c);
 void Push_automata_b(Param_t *param, Automata_t *automata, FILE *f);
+void Pull_automata_b(Param_t *param, Automata_t *automata, FILE *f);
 
 
 
@@ -66,6 +68,18 @@ void Init_automata(Param_t *param, Automata_t *automata, ulong_t estado_seed, ul
 		}
 }
 
+void Init_automata_garbage(Param_t *param, Automata_t *automata)
+{
+	ulong_t i;
+
+	//creacion de estados
+	automata->estados = (ulong_t*) malloc(param->n_estados * sizeof(ulong_t) );
+	//creacion de tranciciones
+	automata->transiciones = (ulong_t**) malloc(param->n_pulsos * sizeof(ulong_t*) );
+	for (i = 0; i < param->n_pulsos; ++i)
+		automata->transiciones[i] = (ulong_t*) malloc(param->n_estados * sizeof(ulong_t));
+
+}
 void Del_automata(Param_t *param, Automata_t *automata)
 {
 	ulong_t i;
@@ -113,7 +127,20 @@ void Push_automata_b(Param_t *param, Automata_t *automata, FILE *f)
 	fwrite(&automata->estado_seed, sizeof(ulong_t), 1, f);
 	fwrite(&automata->transicion_seed, sizeof(ulong_t), 1, f);
 	
-	fwrite(&automata->estados, sizeof(ulong_t), param->n_estados, f);
+	fwrite(automata->estados, sizeof(ulong_t), param->n_estados, f);
 	for (i = 0; i < param->n_pulsos; ++i)
-		fwrite(&automata->transiciones[i], sizeof(ulong_t), param->n_estados, f);
+		fwrite(automata->transiciones[i], sizeof(ulong_t), param->n_estados, f);
+}
+
+void Pull_automata_b(Param_t *param, Automata_t *automata, FILE *f)
+{
+
+	ulong_t i;
+	fread(&automata->isomorfo, sizeof(bool), 1, f);
+	fread(&automata->estado_seed, sizeof(ulong_t), 1, f);
+	fread(&automata->transicion_seed, sizeof(ulong_t), 1, f);
+	
+	fread(automata->estados, sizeof(ulong_t), param->n_estados, f);
+	for (i = 0; i < param->n_pulsos; ++i)
+		fread(automata->transiciones[i], sizeof(ulong_t), param->n_estados, f);
 }

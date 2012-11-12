@@ -1,3 +1,3 @@
 .PHONY : clean install
 automata: automata.c automata.h 
-	gcc -Wall -fopenmp $< -o $@ -lm 
+	gcc -Wall -g -fopenmp $< -o $@ -lm 
