@@ -28,7 +28,7 @@ typedef struct Automata
 
 void Init_automata(Param_t *param, Automata_t *automata, ulong_t estado_seed, ulong_t transicion_seed);
 void Print_automata(Param_t *param, Automata_t *automata);
-void Automata_to_string(param_t *param, Automata_t *automata, char* c);
+void Automata_to_string(Param_t *param, Automata_t *automata, char** c);
 
 
 void Init_automata(Param_t *param, Automata_t *automata, ulong_t estado_seed, ulong_t transicion_seed)
@@ -76,7 +76,19 @@ void Print_automata(Param_t *param, Automata_t *automata)
 	}
 }
 
-void Automata_to_string(Param_t *param, Automata_t *automata, char* c)
+void Automata_to_string(Param_t *param, Automata_t *automata, char** c)
 {
-
+	*c = (char*) calloc(128, sizeof(char));
+	ulong i, j;
+	for (i = 0; i < param->n_estados; ++i)
+	{
+		sprintf(*c, "%s%lu->(", *c, automata->estados[i] );
+		for (j = 0; j < param->n_pulsos; ++j)
+		{
+			sprintf(*c, "%s%lu", *c, automata->transiciones[j][i]);
+			if (j + 1 < param->n_pulsos)
+				sprintf(*c, "%s, ", *c);
+		}
+		sprintf(*c, "%s);", *c);
+	}
 }
