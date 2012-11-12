@@ -19,6 +19,8 @@ typedef struct Param
 
 	ulong_t max_archivo; //numero maximo de automatas por archivo
 	ulong_t *estados;
+
+	ulong_t etapa;
 }Param_t;
 
 typedef struct Automata
