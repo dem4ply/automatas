@@ -28,11 +28,12 @@ typedef struct Automata
 
 void Init_automata(Param_t *param, Automata_t *automata, ulong_t estado_seed, ulong_t transicion_seed);
 void Print_automata(Param_t *param, Automata_t *automata);
+void Automata_to_string(param_t *param, Automata_t *automata, char* c);
 
 
 void Init_automata(Param_t *param, Automata_t *automata, ulong_t estado_seed, ulong_t transicion_seed)
 {
-	ulong_t i = sizeof(ulong_t);
+	ulong_t i, j;
 
 	//creacion de estados
 	automata->estados = (ulong_t*) calloc(param->n_estados, sizeof(ulong_t) );
@@ -44,6 +45,21 @@ void Init_automata(Param_t *param, Automata_t *automata, ulong_t estado_seed, ul
 	automata->isomorfo = TRUE;
 	automata->estado_seed = estado_seed;
 	automata->transicion_seed = transicion_seed;
+
+	for (i = 0; i < param->n_estados; ++i)
+	{
+		automata->estados[i] = estado_seed & 1;
+		estado_seed >>= 1;
+	}
+
+	double base_d = 1.0 / param->n_estados;
+
+	for (i = 0; i < param->n_estados; ++i)
+		for (j = 0; j < param->n_pulsos; ++j)
+		{
+			automata->transiciones[j][i] = transicion_seed % param->n_estados;
+			transicion_seed *= base_d;
+		}
 }
 
 void Print_automata(Param_t *param, Automata_t *automata)
@@ -58,4 +74,9 @@ void Print_automata(Param_t *param, Automata_t *automata)
 		}
 		printf(")\n");
 	}
+}
+
+void Automata_to_string(Param_t *param, Automata_t *automata, char* c)
+{
+
 }
