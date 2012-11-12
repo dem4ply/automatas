@@ -14,6 +14,7 @@ typedef struct Param
 	ulong_t n_pulsos;
 
 	ulong_t n_automatas;
+	ulong_t max_cadena;
 }Param_t;
 
 typedef struct Automata
@@ -29,6 +30,8 @@ typedef struct Automata
 void Init_automata(Param_t *param, Automata_t *automata, ulong_t estado_seed, ulong_t transicion_seed);
 void Init_automata_garbage(Param_t *param, Automata_t *automata);
 void Del_automata(Param_t *param, Automata_t *automata);
+
+ulong_t Get_aswer(Param_t *param, Automata_t *automata, ulong_t c, ulong_t nc);
 
 void Print_automata(Param_t *param, Automata_t *automata);
 void Automata_to_string(Param_t *param, Automata_t *automata, char** c);
@@ -80,6 +83,7 @@ void Init_automata_garbage(Param_t *param, Automata_t *automata)
 		automata->transiciones[i] = (ulong_t*) malloc(param->n_estados * sizeof(ulong_t));
 
 }
+
 void Del_automata(Param_t *param, Automata_t *automata)
 {
 	ulong_t i;
@@ -143,4 +147,23 @@ void Pull_automata_b(Param_t *param, Automata_t *automata, FILE *f)
 	fread(automata->estados, sizeof(ulong_t), param->n_estados, f);
 	for (i = 0; i < param->n_pulsos; ++i)
 		fread(automata->transiciones[i], sizeof(ulong_t), param->n_estados, f);
+}
+
+ulong_t Get_aswer(Param_t *param, Automata_t *automata, ulong_t c, ulong_t nc)
+{
+	//nc = num de caracteres
+	//c = Cadena
+	ulong_t ea = 0; //estado actual
+	ulong_t i;
+	double base_d = 1.0 / param->n_pulsos;
+
+	for (i = 0; i < nc; ++i)
+	{
+		printf("ae = %lu\n", ea);
+		ea = automata->transiciones[c % param->n_pulsos][ea];
+		printf("be = %lu\n", ea);
+		c *= base_d;
+	}
+
+	return automata->estados[ea];
 }
