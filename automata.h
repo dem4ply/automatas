@@ -40,7 +40,7 @@ void Del_automata(Param_t *param, Automata_t *automata);
 
 ulong_t Get_answer(Param_t *param, Automata_t *automata, ulong_t c, ulong_t nc);
 bool Equal_automatas(Param_t *param, Automata_t *a1, Automata_t *a2);
-bool Compare_Automatas_first(Param_t *param, Automta_t *a1);
+bool Compare_Automatas_first(Param_t *param, Automata_t *a1);
 
 void Print_automata(Param_t *param, Automata_t *automata);
 void Automata_to_string(Param_t *param, Automata_t *automata, char** c);
@@ -54,7 +54,7 @@ void Init_automata(Param_t *param, Automata_t *automata, ulong_t estado_seed, ul
 	ulong_t i, j;
 
 	//creacion de estados
-	automata->estados = (estado_t*) calloc(param->n_estados, sizeof(estado_t) );
+	automata->estados = (estados_t*) calloc(param->n_estados, sizeof(estados_t) );
 	//creacion de tranciciones
 	automata->transiciones = (trans_t**) malloc(param->n_pulsos * sizeof(trans_t*) );
 	for (i = 0; i < param->n_pulsos; ++i)
@@ -85,7 +85,7 @@ void Init_automata_garbage(Param_t *param, Automata_t *automata)
 	ulong_t i;
 
 	//creacion de estados
-	automata->estados = (estado_t*) calloc(param->n_estados, sizeof(estado_t) );
+	automata->estados = (estados_t*) calloc(param->n_estados, sizeof(estados_t) );
 	//creacion de tranciciones
 	automata->transiciones = (trans_t**) malloc(param->n_pulsos * sizeof(trans_t*) );
 	for (i = 0; i < param->n_pulsos; ++i)
@@ -107,10 +107,10 @@ void Print_automata(Param_t *param, Automata_t *automata)
 	ulong i, j;
 	for (i = 0; i < param->n_estados; ++i)
 	{
-		printf("%lu->(", automata->estados[i] );
+		printf("%d->(", automata->estados[i] );
 		for (j = 0; j < param->n_pulsos; ++j)
 		{
-			printf("%lu, ", automata->transiciones[j][i]);
+			printf("%d, ", automata->transiciones[j][i]);
 		}
 		printf(")\n");
 	}
@@ -122,10 +122,10 @@ void Automata_to_string(Param_t *param, Automata_t *automata, char** c)
 	ulong i, j;
 	for (i = 0; i < param->n_estados; ++i)
 	{
-		sprintf(*c, "%s%lu->(", *c, automata->estados[i] );
+		sprintf(*c, "%s%d->(", *c, automata->estados[i] );
 		for (j = 0; j < param->n_pulsos; ++j)
 		{
-			sprintf(*c, "%s%lu", *c, automata->transiciones[j][i]);
+			sprintf(*c, "%s%d", *c, automata->transiciones[j][i]);
 			if (j + 1 < param->n_pulsos)
 				sprintf(*c, "%s, ", *c);
 		}
@@ -140,7 +140,7 @@ void Push_automata_b(Param_t *param, Automata_t *automata, FILE *f)
 	fwrite(&automata->estado_seed, sizeof(ulong_t), 1, f);
 	fwrite(&automata->transicion_seed, sizeof(ulong_t), 1, f);
 	
-	fwrite(automata->estados, sizeof(estado_t), param->n_estados, f);
+	fwrite(automata->estados, sizeof(estados_t), param->n_estados, f);
 	for (i = 0; i < param->n_pulsos; ++i)
 		fwrite(automata->transiciones[i], sizeof(trans_t), param->n_estados, f);
 }
@@ -153,7 +153,7 @@ void Pull_automata_b(Param_t *param, Automata_t *automata, FILE *f)
 	fread(&automata->estado_seed, sizeof(ulong_t), 1, f);
 	fread(&automata->transicion_seed, sizeof(ulong_t), 1, f);
 	
-	fread(automata->estados, sizeof(estado_t), param->n_estados, f);
+	fread(automata->estados, sizeof(estados_t), param->n_estados, f);
 	for (i = 0; i < param->n_pulsos; ++i)
 		fread(automata->transiciones[i], sizeof(trans_t), param->n_estados, f);
 }
@@ -175,37 +175,40 @@ ulong_t Get_answer(Param_t *param, Automata_t *automata, ulong_t c, ulong_t nc)
 	return automata->estados[ea];
 }
 
-bool Equal_Automatas(Param_t *param, Automta_t *a1, Automata_t *a2)
+bool Equal_Automatas(Param_t *param, Automata_t *a1, Automata_t *a2)
 {
-	ulong_t max_c;
+	ulong_t max_c, q, c;
 	bool equal = TRUE;
-	estado_t resp1, resp2;
-	for (q = 0; q < param.max_cadena && !equal; ++q)
+	estados_t resp1, resp2;
+	for (q = 0; q < param->max_cadena && !equal; ++q)
 	{
-		max_c = pow(param.n_pulsos, q);
+		max_c = pow(param->n_pulsos, q);
 		for (c = 0; c < max_c && !equal; ++c)
 		{
 			resp1 = Get_answer(param, a1, c, max_c);
 			resp2 = Get_answer(param, a2, c, max_c);
 			if (resp1 != resp2)
-				equal = false;
+				equal = FALSE;
 		}
 	}
+
+	return equal;
 }
 
-bool Compare_Automatas_first(Param_t *param, Automta_t *a1)
+bool Compare_Automatas_first(Param_t *param, Automata_t *a1)
 {
-	ulong_t max_c;
+	ulong_t max_c, q, c;
 	bool equal = TRUE;
-	estado_t resp1;
-	for (q = 0; q < param.max_cadena && !equal; ++q)
+	estados_t resp1;
+	for (q = 0; q < param->max_cadena && !equal; ++q)
 	{
-		max_c = pow(param.n_pulsos, q);
+		max_c = pow(param->n_pulsos, q);
 		for (c = 0; c < max_c && !equal; ++c)
 		{
 			resp1 = Get_answer(param, a1, c, max_c);
 			if (resp1 != a1->estados[0])
-				equal = false;
+				equal = FALSE;
 		}
 	}
+	return equal;
 }
