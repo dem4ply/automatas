@@ -19,7 +19,7 @@ typedef struct Param
 	ulong_t max_automatas_estado;
 	ulong_t max_cadena;
 
-	ulong_t estado;
+	ulong_t *estados;
 
 	ulong_t etapa;
 }Param_t;
@@ -180,10 +180,10 @@ bool Equal_Automatas(Param_t *param, Automata_t *a1, Automata_t *a2)
 	ulong_t max_c, q, c;
 	bool equal = TRUE;
 	estados_t resp1, resp2;
-	for (q = 0; q < param->max_cadena && !equal; ++q)
+	for (q = 0; q < param->max_cadena && equal; ++q)
 	{
 		max_c = pow(param->n_pulsos, q);
-		for (c = 0; c < max_c && !equal; ++c)
+		for (c = 0; c < max_c && equal; ++c)
 		{
 			resp1 = Get_answer(param, a1, c, max_c);
 			resp2 = Get_answer(param, a2, c, max_c);
@@ -200,10 +200,10 @@ bool Compare_Automatas_first(Param_t *param, Automata_t *a1)
 	ulong_t max_c, q, c;
 	bool equal = TRUE;
 	estados_t resp1;
-	for (q = 0; q < param->max_cadena && !equal; ++q)
+	for (q = 0; q < param->max_cadena && equal; ++q)
 	{
 		max_c = pow(param->n_pulsos, q);
-		for (c = 0; c < max_c && !equal; ++c)
+		for (c = 0; c < max_c && equal; ++c)
 		{
 			resp1 = Get_answer(param, a1, c, max_c);
 			if (resp1 != a1->estados[0])

@@ -12,74 +12,100 @@ typedef struct Estadisticas
 
 int main(int argc, char* argv[])
 {
-	if (argc != 4)
+	if (argc != 3)
 	{
-		printf("parametros: estados estado etapa\n");
+		printf("parametros: estados etapa\n");
 		return 0;
 	}
 	Param_t param;
 	Estadisticas_t *estad;
-	ulong_t i;
+	ulong_t i, j;
 	Automata_t automata;
 	int tid;
 	bool resp;
-	int thread_set = 8;
 
 	sscanf(argv[1], "%lu", &param.n_estados);
-	sscanf(argv[2], "%lu", &param.estado);
-	sscanf(argv[3], "%lu", &param.etapa);
+	sscanf(argv[2], "%lu", &param.etapa);
+
+	int thread_set = param.n_estados;
 
 	param.n_pulsos = 2;
 	param.max_automatas_estado = 
 		pow(param.n_estados, (param.n_estados * param.n_pulsos ) );
 	param.max_cadena = 2 * (param.n_estados - 1);
 
-
-	char file[thread_set][40];
-	FILE *f_write[thread_set];
-	for (i = 0; i < thread_set; ++i)
+	param.estados = (ulong*) malloc( (param.n_estados - 1) * sizeof(ulong_t) );
+	for (i = 0, j = 0; i < (param.n_estados - 1); ++i)
 	{
-		sprintf(file[i], "a-%lu.p-%lu.e-%lu.bin", param.estado, i, param.etapa);
-		f_write[i] = fopen(file[i], "w");
+		param.estados[i] = j = (j << 1) + 1;
 	}
 
 	if(param.etapa == 1)
 	{
 		omp_set_num_threads(thread_set);
-		int thread_n = omp_get_num_threads();
-		estad = (Estadisticas_t*) calloc(thread_n, sizeof(Estadisticas_t) );
+		estad = (Estadisticas_t*) calloc(thread_set, sizeof(Estadisticas_t) );
 
-		#pragma omp parallel for schedule(dynamic, 10000) private(automata, i, tid, resp) shared(estad, f_write)
-		for(i = 0; i < param.max_automatas_estado; ++i)
+		char file[thread_set][40];
+		FILE *f_write[param.n_estados];
+		for (i = 0; i < (param.n_estados); ++i)
+		{
+			ulong temp1 = param.estados[i], temp2 = param.etapa;
+			sprintf(file[i], "_a-%lu.e-%lu.bin", temp1, temp2);
+			f_write[i] = fopen(file[i], "w");
+		printf("i: %lu\n", i);
+		printf("2i: %lu\n", param.n_estados - 1);
+		printf("estado: %lu\n", param.estados[i]);
+		}
+
+		#pragma omp parallel private(automata, i, tid, resp) shared(estad, f_write)
 		{
 			tid = omp_get_thread_num();
-			if(tid == 0)
+
+			#pragma omp master
 			{
-				system("clear");
-				ulong_t n_automatas, n_pass;
-				n_automatas = 0; n_pass = 0;
-				for (i = 0; i < thread_n; ++i)
+				int thread_n = omp_get_num_threads();
+				ulong_t total_automatas, 
+						  n_automatas = param.max_automatas_estado * (param.n_estados - 1);
+				do
 				{
-					n_automatas += estad[i].n_automatas;
-					n_pass += estad[i].n_pass;
-				}
-					printf("n_automatas   = %lu\nmax_automatas = %lu\nn_pass = %lu\n",
-							n_automatas,
-							param.max_automatas_estado,
-							n_pass
-							);
+					system("clear");
+					printf("thread total = %d\n", thread_n);
+					printf("thread set = %d\n", thread_set);
+					printf("total automatas = %lu\n", total_automatas);
+					printf("n_automatas     = %lu\n\n", n_automatas);
+					total_automatas = 0;
+					for (i = 0; i < thread_n - 1; ++i)
+					{
+						printf("thread id    = %lu\n", i);
+						printf("n_automatas   = %lu\nmax_automatas = %lu\nn_pass = %lu\n\n",
+								estad[i].n_automatas,
+								param.max_automatas_estado,
+								estad[i].n_pass
+								);
+						total_automatas += estad[i].n_automatas;
+					}
+					sleep(2);
+				}while(total_automatas != n_automatas);
 			}
-
-			Init_automata(&param, &automata, param.estado, i);
-
-			resp = Compare_Automatas_first(&param, &automata);
-
-			if (resp)
+			if (tid)
 			{
-				++estad[tid].n_pass;
-				Push_automata_b(&param, &automata, f_write[tid]);
+				--tid;
+				for(i = 0; i < param.max_automatas_estado; ++i)
+				{
+
+					Init_automata(&param, &automata, param.estados[tid], i);
+
+					resp = Compare_Automatas_first(&param, &automata);
+
+					if (!resp)
+					{
+						++estad[tid].n_pass;
+						//printf("\ntid : %d\n",tid);
+						Push_automata_b(&param, &automata, f_write[tid]);
+					}
+					++estad[tid].n_automatas;
+				}
 			}
-			++estad[tid].n_automatas;
 		}
 	} //final de etapa 1
 	return 0;
