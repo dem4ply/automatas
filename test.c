@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 	param.max_cadena = 2 * (param.n_estados - 1);
 
 	Init_automata(&param, &a1, 0, 0);
-	FILE *f = fopen("_a-15.e-1.bin", "r");
+	FILE *f = fopen("_a-7.e-2.bin", "r");
 	char *s1;
 
 	for (i = 0; !feof(f); ++i)
